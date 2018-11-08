@@ -8,6 +8,9 @@
                 height: 256px;
                 width: 100%;
             }
+            #map-type-container{
+                margin-top: 50px;
+            }
         </style>
         <title>OpenLayers3实战</title>
         <script src="ol3/ol.js" type="text/javascript"></script>
@@ -25,9 +28,41 @@
             <input type="button" onclick="zoomOut()" value="缩小"/>
             <input type="button" onclick="fitToChengdu()" value="显示成都"/>
         </div>
+        <div id="map-type-container">
+            <input type="radio" checked="checked" name="mapSource" onclick="switch2OSM()"/>OpenStreetMap地图
+            <input type="radio" name="mapSource" onclick="switch2BingMap()"/>Bing地图
+            <input type="radio" name="mapSource" onclick="switch2StamenMap()"/>Stamen地图
+            <input type="radio" name="mapSource" onclick="switch2MapQuest()"/>MapQuest地图
+        </div>
 
         <script type="text/javascript">
-            var extent = [102, 29, 104, 31];
+            // Open Street Map 地图层
+            var openStreetMapLayer = new ol.layer.Tile({
+                source: new ol.source.OSM()
+            });
+
+            // Bing地图层
+            var bingMapLayer = new ol.layer.Tile({
+                source: new ol.source.BingMaps({
+                    key: 'AkjzA7OhS4MIBjutL21bkAop7dc41HSE0CNTR5c6HJy8JKc7U9U9RveWJrylD3XJ',
+                    imagerySet: 'Road'
+                })
+            });
+
+            // Stamen地图层
+            var stamenLayer = new ol.layer.Tile({
+                source: new ol.source.Stamen({
+                    layer: 'watercolor'
+                })
+            });
+
+            // MapQuest地图层
+            var mapQuestLayer = new ol.layer.Tile({
+                source: new ol.source.MapQuest({
+                    layer: 'osm'
+                })
+            });
+
             var map = new ol.Map({   
                 controls: ol.control.defaults({
                     attributionOptions: ({
@@ -36,7 +71,7 @@
                 }),
                 logo: {src: 'img/face_monkey.png', href: 'http://www.openstreetmap.org/'},
                 layers: [           
-                    new ol.layer.Tile({source: new ol.source.OSM()}) 
+                    openStreetMapLayer 
                 ],
                 view: new ol.View({
                     // 设置成都为地图中心，此处进行坐标转换
@@ -113,6 +148,7 @@
 
                // 显示成都
                function fitToChengdu(){
+                   var extent = [102, 29, 104, 31];
                    var imgW = extent[2];
                    var imgH = extent[3];
                    var boxW = document.getElementById('map').offsetWidth;
@@ -122,8 +158,33 @@
                    var maxRes = xRes < yRes ? yRes : xRes;
                    map.getView().setResolution(maxRes);
                    map.getView().calculateExtent(map.getSize())
-
                }
+
+               // OpenStreetMap地图
+               function switch2OSM(){
+                   map.removeLayer(map.getLayers().item(0));
+                   map.addLayer(openStreetMapLayer);
+               }
+
+               // Bing地图
+               function switch2BingMap(){
+                   map.removeLayer(map.getLayers().item(0));
+                   map.addLayer(bingMapLayer);
+               }
+
+               // Stamen地图
+               function switch2StamenMap(){
+                   map.removeLayer(map.getLayers().item(0));
+                   map.addLayer(stamenLayer);
+               }
+
+               // MapQuest地图
+               function switch2MapQuest(){
+                   map.removeLayer(map.getLayers().item(0));
+                   map.addLayer(mapQuestLayer);
+               }
+
+
         </script>
     </body>
 </html>

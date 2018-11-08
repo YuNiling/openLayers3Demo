@@ -45,6 +45,9 @@
             <input type="radio" name="mapSource" onclick="switchGoogleMapLayerXYZMap()"/>Google地图
             <input type="radio" name="mapSource" onclick="switchOfflineMapLayerMap()"/>离线瓦片地图
         </div>
+        <div class="map-type-container">
+            <input type="button" onclick="showStaticMap()" value="静态地图"/>
+        </div>
 
         <script type="text/javascript">
             // 自定义分辨率和瓦片坐标系
@@ -173,7 +176,7 @@
                         collapsible: false
                     })
                 }),
-                logo: {src: 'img/face_monkey.png', href: 'http://www.openstreetmap.org/'},
+                logo: {src: 'src/img/face_monkey.png', href: 'http://www.openstreetmap.org/'},
                 layers: [           
                     openStreetMapLayer 
                 ],
@@ -328,6 +331,48 @@
             function switchOfflineMapLayerMap(){
                 map.removeLayer(map.getLayers().item(0));
                 map.addLayer(OfflineMapLayerMap);
+            }
+
+            // 静态地图
+            function showStaticMap(){
+                // 地图设置中心，设置到成都，在本地离线地图 offlineMapTiles刚好有一张zoom为4的成都瓦片
+                var center = ol.proj.transform([104.06667, 30.66667], 'EPSG:4326', 'EPSG:3857');
+                // 计算熊猫基地地图映射到地图上的范围，图片像素为 550*344，保持比例的情况下，把分辨率放大一些
+                var extent = [center[0]- 550*1000/2, center[1]-344*1000/2, center[0]+550*1000/2, center[1]+344*1000/2];
+                var view = map.getView();
+                view.setCenter(center);
+                view.setZoom(7);
+                map.removeLayer(map.getLayers().item(0));
+                map.addLayer(new ol.layer.Image({
+                    source: new ol.source.ImageStatic({
+                        url: 'src/img/pandaBase.jpg',  // 熊猫基地地图
+                        imageExtent: extent            // 映射到地图的范围
+                    })
+                }));
+                map.render();
+
+                // 创建一个用于放置活动图标的layer
+                var activityLayer = new ol.layer.Vector({
+                    source: new ol.source.Vector()
+                });
+                
+                 // 创建一个活动图标需要的Feature，并设置位置
+                var activity = new ol.Feature({
+                    geometry: new ol.geom.Point([center[0]-550*1000/2+390*1000, center[1]-344*1000/2+(344-145)*1000])
+                });
+
+                // 设置Feature的样式，使用小旗子图标
+                activity.setStyle(new ol.style.Style({
+                    image: new ol.style.Icon({
+                        src: 'src/img/flag_right.png',
+                        anchor: [0, 1],
+                        scale: 0.2
+                    })
+                }));
+
+                 // 添加活动Feature到layer上，并把layer添加到地图中
+                 activityLayer.getSource().addFeature(activity);
+                 map.addLayer(activityLayer);
             }
 
         </script>

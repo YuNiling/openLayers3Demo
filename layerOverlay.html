@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="ol3/ol.css" type="text/css">
+        <style>
+            #map {
+                height: 256px;
+                width: 100%;
+            }
+            .navigate-container{
+                margin-top: 20px;
+            }
+        </style>
+        <title>图层叠加</title>
+        <script src="ol3/ol.js" type="text/javascript"></script>
+    </head>
+
+    <body>
+        <div id="map"></div>
+
+        <div class="navigate-container">
+            显示/隐藏：
+            <input type="checkbox" checked="checked" onclick="checkOsm(this)"/>底图
+            <input type="checkbox" checked="checked" onclick="checkCircle(this)"/>圆
+            <input type="checkbox" checked="checked" onclick="checkPoint(this)"/>点
+        </div>
+        <div class="navigate-container">
+            底图顺序：
+            <input name="sq" type="radio" value="" onclick="upOsm(this)"/>底图最上
+            <input name="sq" type="radio" value="" onclick="upCircle(this)" checked="checked"/>圆最上
+            <input name="sq" type="radio" value="" onclick="upPoint(this)"/>点最上
+        </div>
+        
+        <script type="text/javascript">
+            // 创建3个图层
+            var osmLayer = new ol.layer.Tile({
+                source: new ol.source.OSM()
+            });
+            var pointLayer = new ol.layer.Vector({
+                source: new ol.source.Vector()
+            });
+            var circleLayer = new ol.layer.Vector({
+                source: new ol.source.Vector()
+            });
+
+            new ol.Map({
+                // 在地图上添加上面创建的三个图层，图层顺序自下而上，依次是osm，point，circle
+                layers: [osmLayer, pointLayer, circleLayer],
+                view: new ol.View({
+                    center: [0, 0],
+                    zoom: 2
+                }),
+                target: "map"
+            });
+            
+            // 添加点
+            var point = new ol.Feature({
+                geometry: new ol.geom.Point([0, 0])
+            });
+            point.setStyle(new ol.style.Style({
+                image: new ol.style.Circle({
+                    radius: 1,
+                    fill: new ol.style.Fill({
+                        color: "red"
+                    }),
+                    stroke: new ol.style.Stroke({
+                        color: "red",
+                        size: 1
+                    })
+                })
+            })); 
+            pointLayer.getSource().addFeature(point);
+
+            // 添加圆
+            var circle = new ol.Feature({
+                geometry: new ol.geom.Point([0, 0])
+            });
+            circle.setStyle(new ol.style.Style({
+                image: new ol.style.Circle({
+                    radius: 10,
+                    stroke: new ol.style.Stroke({
+                        color: "blue",
+                        size: 1
+                    })
+                })
+            }));
+            circleLayer.getSource().addFeature(circle);
+
+            // 隐藏显示osm图层
+            function checkOsm(elem){
+                osmLayer.setVisible(elem.checked);
+            }
+
+            // 隐藏显示point图层
+            function checkPoint(elem){
+                pointLayer.setVisible(elem.checked);
+            }
+
+            // 隐藏显示circle图层
+            function checkCircle(elem){
+                circleLayer.setVisible(elem.checked);
+            }
+
+            // 置顶osm图层到最上面
+            function upOsm(elem){
+                if(elem.checked){
+                    osmLayer.setZIndex(3);
+                    circleLayer.setZIndex(circleLayer.getZIndex()-1);
+                    pointLayer.setZIndex(pointLayer.getZIndex()-1);
+                }
+            } 
+            
+            // 置顶circle图层到最上面
+            function upCircle(elem){
+                if(elem.checked){
+                    circleLayer.setZIndex(3);
+                    osmLayer.setZIndex(osmLayer.getZIndex()-1);
+                    pointLayer.setZIndex(pointLayer.getZIndex()-1);
+                }
+            } 
+            
+            // 置顶point图层到最上面
+            function upPoint(elem){
+                if(elem.checked){
+                    pointLayer.setZIndex(3);
+                    osmLayer.setZIndex(osmLayer.getZIndex()-1);
+                    circleLayer.setZIndex(circleLayer.getZIndex()-1);
+                }
+            } 
+
+        </script>
+    </body>
+</html>
